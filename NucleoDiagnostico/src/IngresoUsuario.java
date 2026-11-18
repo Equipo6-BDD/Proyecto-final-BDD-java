@@ -1,4 +1,6 @@
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 
@@ -6,6 +8,11 @@ public class IngresoUsuario extends javax.swing.JPanel {
 
     public IngresoUsuario() {
         initComponents();
+    }
+
+    public void limpiarCampos() {
+        nombreUsuario.setText("");
+        contraseñaUsuario.setText("");
     }
 
     @SuppressWarnings("unchecked")
@@ -27,10 +34,7 @@ public class IngresoUsuario extends javax.swing.JPanel {
         btnAceptar.addActionListener(this::btnAceptarActionPerformed);
 
         btnCancelar.setText("Cancelar");
-        btnCancelar.addActionListener(evt -> {
-            nombreUsuario.setText("");
-            contraseñaUsuario.setText("");
-        });
+        btnCancelar.addActionListener(evt -> limpiarCampos());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -76,20 +80,53 @@ public class IngresoUsuario extends javax.swing.JPanel {
         String usuarioInput = nombreUsuario.getText().trim();
         String passwordInput = new String(contraseñaUsuario.getPassword()).trim();
 
-        if (usuarioInput.equals("admin") && passwordInput.equals("1234")) {
+        if (usuarioInput.isEmpty() || passwordInput.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor ingresa usuario y contraseña.");
+            return;
+        }
+
+        javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
+        UserInterface ui = (UserInterface) ventana;
+
+        // 1. Si es admin (Avance 2)
+        if (usuarioInput.equalsIgnoreCase("admin") && passwordInput.equals("1234")) {
             try (Connection con = ConexionDB.conectar()) {
                 if (con != null) {
-                    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
-                    UserInterface ui = (UserInterface) ventana;
-
-                    ui.principal.setUsuario(usuarioInput);
+                    ui.principal.setUsuario("admin");
+                    ui.principal.ocultarTabla();
                     ui.mostrarPantalla("menu");
                 }
             } catch (SQLException e) {
                 JOptionPane.showMessageDialog(this, "Error SQL: " + e.getMessage());
             }
-        } else {
-            JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos (Usa: admin / 1234).");
+            return;
+        }
+
+        // 2. Si es una Empleada por su Código (ID_Em = 1 o 2) y Contraseña (Avance 3)
+        // Consultamos todas las columnas de Empleado para no fallar por el nombre exacto de la columna
+        String sql = "SELECT * FROM public.\"Empleado\"";
+        try (Connection con = ConexionDB.conectar();
+             PreparedStatement pst = con.prepareStatement(sql);
+             ResultSet rs = pst.executeQuery()) {
+
+            while (rs.next()) {
+                String codigoDB = rs.getString(1).trim(); // Columna 1: ID_Em (1 o 2)
+                String nombreCompleto = rs.getString(2).trim(); // Columna 2: Nombre (Beatriz... / Janet...)
+                String passDB = rs.getString(6).trim(); // Columna 6: Contraseña (7021972 / 31101987)
+
+                if (usuarioInput.equals(codigoDB) && passwordInput.equals(passDB)) {
+                    String primerNombre = nombreCompleto.split(" ")[0].toUpperCase();
+                    ui.principal.setUsuario("Hola, " + primerNombre);
+                    ui.principal.ocultarTabla();
+                    ui.mostrarPantalla("menu");
+                    return;
+                }
+            }
+
+            JOptionPane.showMessageDialog(this, "Código de empleado o contraseña incorrectos.", "Acceso denegado", JOptionPane.ERROR_MESSAGE);
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al autenticar empleado:\n" + e.getMessage());
         }
     }//GEN-LAST:event_btnAceptarActionPerformed
 
