@@ -17,12 +17,15 @@ public class VentanaPrincipal extends javax.swing.JPanel {
         LabelUsuario.setText(usuario);
     }
 
+    public void ocultarTabla() {
+        panelDatos.setVisible(false);
+    }
+
     public void mostrarTabla(String[] columnas, Object[][] datos) {
         panelDatos.setVisible(true);
         tablaDatos.setModel(new javax.swing.table.DefaultTableModel(datos, columnas));
     }
 
-    // Método para hacer el SELECT en PostgreSQL y llenar la JTable automáticamente
     public void cargarTablaDesdeSQL(String sql) {
         try (Connection con = ConexionDB.conectar();
              Statement st = con.createStatement();
@@ -60,22 +63,25 @@ public class VentanaPrincipal extends javax.swing.JPanel {
         imagenEmpotrada = new javax.swing.JLabel();
         panelDatos = new javax.swing.JScrollPane();
         tablaDatos = new javax.swing.JTable();
+        btnCerrarSesion = new javax.swing.JButton();
 
         LabelUsuario.setFont(new java.awt.Font("Segoe UI Semibold", 0, 18)); // NOI18N
         LabelUsuario.setText("UsuarioLoggeado");
 
         imagenEmpotrada.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/icono.png"))); // NOI18N
 
+        btnCerrarSesion.setText("Cerrar Sesión");
+        btnCerrarSesion.addActionListener(evt -> {
+            javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
+            UserInterface ui = (UserInterface) ventana;
+            ui.getIngreso().limpiarCampos();
+            ocultarTabla();
+            ui.mostrarPantalla("inicio");
+        });
+
         tablaDatos.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
+            new Object [][] {},
+            new String [] { "Title 1", "Title 2", "Title 3", "Title 4" }
         ));
         panelDatos.setViewportView(tablaDatos);
 
@@ -85,13 +91,15 @@ public class VentanaPrincipal extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(32, 32, 32)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(panelDatos, javax.swing.GroupLayout.PREFERRED_SIZE, 497, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(panelDatos, javax.swing.GroupLayout.PREFERRED_SIZE, 560, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(imagenEmpotrada, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(LabelUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(21, Short.MAX_VALUE))
+                        .addComponent(LabelUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnCerrarSesion)))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -101,8 +109,10 @@ public class VentanaPrincipal extends javax.swing.JPanel {
                         .addGap(44, 44, 44)
                         .addComponent(imagenEmpotrada, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(66, 66, 66)
-                        .addComponent(LabelUsuario)))
+                        .addGap(62, 62, 62)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(LabelUsuario)
+                            .addComponent(btnCerrarSesion))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(panelDatos, javax.swing.GroupLayout.DEFAULT_SIZE, 248, Short.MAX_VALUE)
                 .addContainerGap())
@@ -111,6 +121,7 @@ public class VentanaPrincipal extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel LabelUsuario;
+    private javax.swing.JButton btnCerrarSesion;
     private javax.swing.JLabel imagenEmpotrada;
     private javax.swing.JScrollPane panelDatos;
     private javax.swing.JTable tablaDatos;
