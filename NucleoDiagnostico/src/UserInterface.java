@@ -1,3 +1,5 @@
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.sql.Connection;
 import java.sql.Date;
@@ -41,19 +43,19 @@ public class UserInterface extends javax.swing.JFrame {
         cl.show(panelPrincipal, nombre);
         jMenuBar1.setVisible(!nombre.equals("inicio"));
         pack();
+        setLocationRelativeTo(null);
     }
     
     public IngresoUsuario getIngreso() {
         return ingreso;
     }
 
-    // Convierte fechas como "14-AGO-1967", "31-10-1987" o "1967-08-14" a java.sql.Date
     private Date convertirFecha(String textoFecha) {
         String limpio = textoFecha.trim().toUpperCase().replace("/", "-");
         String[] partes = limpio.split("-");
         if (partes.length == 3) {
             if (partes[0].length() == 4) {
-                return Date.valueOf(limpio); // Ya viene como AAAA-MM-DD
+                return Date.valueOf(limpio);
             }
             Map<String, Integer> meses = new HashMap<>();
             meses.put("ENE", 1); meses.put("FEB", 2); meses.put("MAR", 3); meses.put("ABR", 4);
@@ -141,38 +143,42 @@ public class UserInterface extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    // Formulario visual para Insertar Empleado desde la interfaz (Avance 2 - Paso 2)
+    // Formulario HORIZONTAL para Insertar Empleado
     private void opcionAgregarEmpleadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_opcionAgregarEmpleadoActionPerformed
         JDialog dialogo = new JDialog(this, "Insertar Empleado", true);
-        JPanel panel = new JPanel(new GridLayout(10, 2, 10, 10));
-        panel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        dialogo.setLayout(new BorderLayout(10, 10));
 
-        JTextField txtCodigo = new JTextField();
-        JTextField txtNombre = new JTextField();
-        JTextField txtDireccion = new JTextField();
-        JTextField txtTelefono = new JTextField();
-        JTextField txtFechaNac = new JTextField();
+        JPanel panelCampos = new JPanel(new GridLayout(5, 4, 12, 10));
+        panelCampos.setBorder(new EmptyBorder(15, 15, 10, 15));
+
+        JTextField txtCodigo = new JTextField(14);
+        JTextField txtNombre = new JTextField(14);
+        JTextField txtDireccion = new JTextField(14);
+        JTextField txtTelefono = new JTextField(14);
+        JTextField txtFechaNac = new JTextField(14);
         JComboBox<String> cbSexo = new JComboBox<>(new String[]{"FEMENINO", "MASCULINO"});
-        JTextField txtSalario = new JTextField();
+        JTextField txtSalario = new JTextField(14);
         JComboBox<String> cbTurno = new JComboBox<>(new String[]{"MATUTINO", "VESPERTINO"});
-        JTextField txtPass = new JTextField();
+        JTextField txtPass = new JTextField(14);
 
-        panel.add(new JLabel("Código:")); panel.add(txtCodigo);
-        panel.add(new JLabel("Nombre:")); panel.add(txtNombre);
-        panel.add(new JLabel("Dirección:")); panel.add(txtDireccion);
-        panel.add(new JLabel("Teléfono:")); panel.add(txtTelefono);
-        panel.add(new JLabel("Fecha Nac (DD-MM-AAAA):")); panel.add(txtFechaNac);
-        panel.add(new JLabel("Sexo:")); panel.add(cbSexo);
-        panel.add(new JLabel("Salario:")); panel.add(txtSalario);
-        panel.add(new JLabel("Turno:")); panel.add(cbTurno);
-        panel.add(new JLabel("Contraseña:")); panel.add(txtPass);
+        panelCampos.add(new JLabel("Código:")); panelCampos.add(txtCodigo);
+        panelCampos.add(new JLabel("Nombre:")); panelCampos.add(txtNombre);
+        panelCampos.add(new JLabel("Dirección:")); panelCampos.add(txtDireccion);
+        panelCampos.add(new JLabel("Teléfono:")); panelCampos.add(txtTelefono);
+        panelCampos.add(new JLabel("Fecha Nac (DD-MM-AAAA):")); panelCampos.add(txtFechaNac);
+        panelCampos.add(new JLabel("Sexo:")); panelCampos.add(cbSexo);
+        panelCampos.add(new JLabel("Salario:")); panelCampos.add(txtSalario);
+        panelCampos.add(new JLabel("Turno:")); panelCampos.add(cbTurno);
+        panelCampos.add(new JLabel("Contraseña:")); panelCampos.add(txtPass);
+        panelCampos.add(new JLabel("")); panelCampos.add(new JLabel(""));
 
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         JButton btnGuardar = new JButton("Insertar");
         JButton btnCancelar = new JButton("Cancelar");
-        panel.add(btnGuardar); panel.add(btnCancelar);
+        panelBotones.add(btnGuardar);
+        panelBotones.add(btnCancelar);
 
         btnGuardar.addActionListener(e -> {
-            // Obtenemos los nombres exactos de las columnas de public."Empleado" dinámicamente
             try (Connection con = ConexionDB.conectar();
                  Statement st = con.createStatement();
                  ResultSet rs = st.executeQuery("SELECT * FROM public.\"Empleado\" LIMIT 1")) {
@@ -184,7 +190,6 @@ public class UserInterface extends javax.swing.JFrame {
                     cols.append("\"").append(meta.getColumnName(i)).append("\"");
                 }
 
-                // El orden en tu tabla Empleado es: 1:ID, 2:Nombre, 3:Sexo, 4:Turno, 5:Salario, 6:Contraseña, 7:Direccion, 8:Telefono, 9:Fecha_Nac
                 String sql = "INSERT INTO public.\"Empleado\" (" + cols + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 try (PreparedStatement pst = con.prepareStatement(sql)) {
                     pst.setInt(1, Integer.parseInt(txtCodigo.getText().trim()));
@@ -207,7 +212,8 @@ public class UserInterface extends javax.swing.JFrame {
         });
 
         btnCancelar.addActionListener(e -> dialogo.dispose());
-        dialogo.add(panel);
+        dialogo.add(panelCampos, BorderLayout.CENTER);
+        dialogo.add(panelBotones, BorderLayout.SOUTH);
         dialogo.pack();
         dialogo.setLocationRelativeTo(this);
         dialogo.setVisible(true);
@@ -219,33 +225,37 @@ public class UserInterface extends javax.swing.JFrame {
         mostrarPantalla("menu");
     }//GEN-LAST:event_consultasGeneralesEmpleadosActionPerformed
 
-    // Formulario visual para Insertar Doctor desde la interfaz (Avance 2 - Paso 6)
+    // Formulario HORIZONTAL para Insertar Doctor
     private void opcionAgregarDoctorActionPerformed(java.awt.event.ActionEvent evt) {                                                    
         JDialog dialogo = new JDialog(this, "Insertar Doctor", true);
-        JPanel panel = new JPanel(new GridLayout(9, 2, 10, 10));
-        panel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        dialogo.setLayout(new BorderLayout(10, 10));
 
-        JTextField txtCodigo = new JTextField();
-        JTextField txtNombre = new JTextField();
-        JTextField txtDireccion = new JTextField();
-        JTextField txtTelefono = new JTextField();
-        JTextField txtFechaNac = new JTextField();
+        JPanel panelCampos = new JPanel(new GridLayout(4, 4, 12, 10));
+        panelCampos.setBorder(new EmptyBorder(15, 15, 10, 15));
+
+        JTextField txtCodigo = new JTextField(14);
+        JTextField txtNombre = new JTextField(14);
+        JTextField txtDireccion = new JTextField(14);
+        JTextField txtTelefono = new JTextField(14);
+        JTextField txtFechaNac = new JTextField(14);
         JComboBox<String> cbSexo = new JComboBox<>(new String[]{"MASCULINO", "FEMENINO"});
-        JTextField txtEspecialidad = new JTextField();
-        JTextField txtPass = new JTextField();
+        JTextField txtEspecialidad = new JTextField(14);
+        JTextField txtPass = new JTextField(14);
 
-        panel.add(new JLabel("Código:")); panel.add(txtCodigo);
-        panel.add(new JLabel("Nombre:")); panel.add(txtNombre);
-        panel.add(new JLabel("Dirección:")); panel.add(txtDireccion);
-        panel.add(new JLabel("Teléfono:")); panel.add(txtTelefono);
-        panel.add(new JLabel("Fecha Nac (DD-MM-AAAA):")); panel.add(txtFechaNac);
-        panel.add(new JLabel("Sexo:")); panel.add(cbSexo);
-        panel.add(new JLabel("Especialidad:")); panel.add(txtEspecialidad);
-        panel.add(new JLabel("Contraseña:")); panel.add(txtPass);
+        panelCampos.add(new JLabel("Código:")); panelCampos.add(txtCodigo);
+        panelCampos.add(new JLabel("Nombre:")); panelCampos.add(txtNombre);
+        panelCampos.add(new JLabel("Dirección:")); panelCampos.add(txtDireccion);
+        panelCampos.add(new JLabel("Teléfono:")); panelCampos.add(txtTelefono);
+        panelCampos.add(new JLabel("Fecha Nac (DD-MM-AAAA):")); panelCampos.add(txtFechaNac);
+        panelCampos.add(new JLabel("Sexo:")); panelCampos.add(cbSexo);
+        panelCampos.add(new JLabel("Especialidad:")); panelCampos.add(txtEspecialidad);
+        panelCampos.add(new JLabel("Contraseña:")); panelCampos.add(txtPass);
 
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         JButton btnGuardar = new JButton("Insertar");
         JButton btnCancelar = new JButton("Cancelar");
-        panel.add(btnGuardar); panel.add(btnCancelar);
+        panelBotones.add(btnGuardar);
+        panelBotones.add(btnCancelar);
 
         btnGuardar.addActionListener(e -> {
             String sql = "INSERT INTO public.\"Doctor\" "
@@ -272,7 +282,8 @@ public class UserInterface extends javax.swing.JFrame {
         });
 
         btnCancelar.addActionListener(e -> dialogo.dispose());
-        dialogo.add(panel);
+        dialogo.add(panelCampos, BorderLayout.CENTER);
+        dialogo.add(panelBotones, BorderLayout.SOUTH);
         dialogo.pack();
         dialogo.setLocationRelativeTo(this);
         dialogo.setVisible(true);
@@ -284,37 +295,41 @@ public class UserInterface extends javax.swing.JFrame {
         mostrarPantalla("menu");
     }                                                          
 
-    // Formulario visual para Insertar Paciente desde la interfaz (Avance 3 - Pasos 3, 4, 5, 8, 9 y 10)
+    // Formulario HORIZONTAL para Insertar Paciente
     private void opcionAgregarPacienteActionPerformed(java.awt.event.ActionEvent evt) {
         JDialog dialogo = new JDialog(this, "Dar de Alta Paciente", true);
-        JPanel panel = new JPanel(new GridLayout(9, 2, 10, 10));
-        panel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        dialogo.setLayout(new BorderLayout(10, 10));
 
-        JTextField txtCodigo = new JTextField();
-        JTextField txtNombre = new JTextField();
-        JTextField txtDireccion = new JTextField();
-        JTextField txtTelefono = new JTextField();
-        JTextField txtFechaNac = new JTextField();
+        JPanel panelCampos = new JPanel(new GridLayout(4, 4, 12, 10));
+        panelCampos.setBorder(new EmptyBorder(15, 15, 10, 15));
+
+        JTextField txtCodigo = new JTextField(14);
+        JTextField txtNombre = new JTextField(14);
+        JTextField txtDireccion = new JTextField(14);
+        JTextField txtTelefono = new JTextField(14);
+        JTextField txtFechaNac = new JTextField(14);
         JComboBox<String> cbSexo = new JComboBox<>(new String[]{"MASCULINO", "FEMENINO"});
-        JTextField txtEdad = new JTextField();
-        JTextField txtEstatura = new JTextField();
+        JTextField txtEdad = new JTextField(14);
+        JTextField txtEstatura = new JTextField(14);
 
-        panel.add(new JLabel("Código:")); panel.add(txtCodigo);
-        panel.add(new JLabel("Nombre:")); panel.add(txtNombre);
-        panel.add(new JLabel("Dirección:")); panel.add(txtDireccion);
-        panel.add(new JLabel("Teléfono:")); panel.add(txtTelefono);
-        panel.add(new JLabel("Fecha Nac (ej. 14-AGO-1967):")); panel.add(txtFechaNac);
-        panel.add(new JLabel("Sexo:")); panel.add(cbSexo);
-        panel.add(new JLabel("Edad:")); panel.add(txtEdad);
-        panel.add(new JLabel("Estatura (ej. 1.77):")); panel.add(txtEstatura);
+        panelCampos.add(new JLabel("Código:")); panelCampos.add(txtCodigo);
+        panelCampos.add(new JLabel("Nombre:")); panelCampos.add(txtNombre);
+        panelCampos.add(new JLabel("Dirección:")); panelCampos.add(txtDireccion);
+        panelCampos.add(new JLabel("Teléfono:")); panelCampos.add(txtTelefono);
+        panelCampos.add(new JLabel("Fecha Nac (ej. 14-AGO-1967):")); panelCampos.add(txtFechaNac);
+        panelCampos.add(new JLabel("Sexo:")); panelCampos.add(cbSexo);
+        panelCampos.add(new JLabel("Edad:")); panelCampos.add(txtEdad);
+        panelCampos.add(new JLabel("Estatura (ej. 1.77):")); panelCampos.add(txtEstatura);
 
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         JButton btnGuardar = new JButton("Insertar");
         JButton btnCancelar = new JButton("Cancelar");
-        panel.add(btnGuardar); panel.add(btnCancelar);
+        panelBotones.add(btnGuardar);
+        panelBotones.add(btnCancelar);
 
         btnGuardar.addActionListener(e -> {
             String sql = "INSERT INTO public.\"Paciente\" "
-                       + "(\"Codigo_Pac\", \"Nombre_Pac\", \"Direcc_Pac\", \"Tel_Pac\", \"Fecha_NacPac\", \"Sexo_Pac\", \"Edad_Pac\", \"Estatura_Pac\") "
+                       + "(\"ID_paciente\", \"Nombre_paciente\", \"Direccion_paciente\", \"Telefono_paciente\", \"Sexo_paciente\", \"Edad_paciente\", \"Estatura_paciente\", \"Fecha_nac_paciente\") "
                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
             try (Connection con = ConexionDB.conectar();
@@ -324,10 +339,10 @@ public class UserInterface extends javax.swing.JFrame {
                 pst.setString(2, txtNombre.getText().trim());
                 pst.setString(3, txtDireccion.getText().trim());
                 pst.setString(4, txtTelefono.getText().trim());
-                pst.setDate(5, convertirFecha(txtFechaNac.getText()));
-                pst.setString(6, cbSexo.getSelectedItem().toString().substring(0, 1));
-                pst.setInt(7, Integer.parseInt(txtEdad.getText().trim()));
-                pst.setBigDecimal(8, new java.math.BigDecimal(txtEstatura.getText().trim()));
+                pst.setString(5, cbSexo.getSelectedItem().toString().substring(0, 1));
+                pst.setInt(6, Integer.parseInt(txtEdad.getText().trim()));
+                pst.setDouble(7, Double.parseDouble(txtEstatura.getText().trim()));
+                pst.setDate(8, convertirFecha(txtFechaNac.getText()));
 
                 pst.executeUpdate();
                 JOptionPane.showMessageDialog(dialogo, "¡Paciente registrado correctamente en PostgreSQL!");
@@ -339,14 +354,15 @@ public class UserInterface extends javax.swing.JFrame {
         });
 
         btnCancelar.addActionListener(e -> dialogo.dispose());
-        dialogo.add(panel);
+        dialogo.add(panelCampos, BorderLayout.CENTER);
+        dialogo.add(panelBotones, BorderLayout.SOUTH);
         dialogo.pack();
         dialogo.setLocationRelativeTo(this);
         dialogo.setVisible(true);
     }
 
     private void consultasGeneralesPacientesActionPerformed(java.awt.event.ActionEvent evt) {
-        String sql = "SELECT * FROM public.\"Paciente\" ORDER BY \"Codigo_Pac\" ASC";
+        String sql = "SELECT * FROM public.\"Paciente\" ORDER BY \"ID_paciente\" ASC";
         principal.cargarTablaDesdeSQL(sql);
         mostrarPantalla("menu");
     }
