@@ -45,6 +45,14 @@ public class UserInterface extends javax.swing.JFrame {
         pack();
         setLocationRelativeTo(null);
     }
+
+    public void configurarPermisos(boolean esAdmin) {
+        menuEmpleados.setVisible(esAdmin);
+        menuDoctores.setVisible(true);
+        opcionAgregarDoctor.setVisible(esAdmin);
+        menuPacientes.setVisible(true);
+        opcionAgregarPaciente.setVisible(true);
+    }
     
     public IngresoUsuario getIngreso() {
         return ingreso;
@@ -143,23 +151,23 @@ public class UserInterface extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    // Formulario HORIZONTAL para Insertar Empleado
+    // Formulario VERTICAL para Insertar Empleado
     private void opcionAgregarEmpleadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_opcionAgregarEmpleadoActionPerformed
         JDialog dialogo = new JDialog(this, "Insertar Empleado", true);
         dialogo.setLayout(new BorderLayout(10, 10));
 
-        JPanel panelCampos = new JPanel(new GridLayout(5, 4, 12, 10));
-        panelCampos.setBorder(new EmptyBorder(15, 15, 10, 15));
+        JPanel panelCampos = new JPanel(new GridLayout(9, 2, 10, 10));
+        panelCampos.setBorder(new EmptyBorder(15, 20, 10, 20));
 
-        JTextField txtCodigo = new JTextField(14);
-        JTextField txtNombre = new JTextField(14);
-        JTextField txtDireccion = new JTextField(14);
-        JTextField txtTelefono = new JTextField(14);
-        JTextField txtFechaNac = new JTextField(14);
+        JTextField txtCodigo = new JTextField(16);
+        JTextField txtNombre = new JTextField(16);
+        JTextField txtDireccion = new JTextField(16);
+        JTextField txtTelefono = new JTextField(16);
+        JTextField txtFechaNac = new JTextField(16);
         JComboBox<String> cbSexo = new JComboBox<>(new String[]{"FEMENINO", "MASCULINO"});
-        JTextField txtSalario = new JTextField(14);
+        JTextField txtSalario = new JTextField(16);
         JComboBox<String> cbTurno = new JComboBox<>(new String[]{"MATUTINO", "VESPERTINO"});
-        JTextField txtPass = new JTextField(14);
+        JTextField txtPass = new JTextField(16);
 
         panelCampos.add(new JLabel("Código:")); panelCampos.add(txtCodigo);
         panelCampos.add(new JLabel("Nombre:")); panelCampos.add(txtNombre);
@@ -170,9 +178,8 @@ public class UserInterface extends javax.swing.JFrame {
         panelCampos.add(new JLabel("Salario:")); panelCampos.add(txtSalario);
         panelCampos.add(new JLabel("Turno:")); panelCampos.add(cbTurno);
         panelCampos.add(new JLabel("Contraseña:")); panelCampos.add(txtPass);
-        panelCampos.add(new JLabel("")); panelCampos.add(new JLabel(""));
 
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         JButton btnGuardar = new JButton("Insertar");
         JButton btnCancelar = new JButton("Cancelar");
         panelBotones.add(btnGuardar);
@@ -225,22 +232,22 @@ public class UserInterface extends javax.swing.JFrame {
         mostrarPantalla("menu");
     }//GEN-LAST:event_consultasGeneralesEmpleadosActionPerformed
 
-    // Formulario HORIZONTAL para Insertar Doctor
+    // Formulario VERTICAL para Insertar Doctor
     private void opcionAgregarDoctorActionPerformed(java.awt.event.ActionEvent evt) {                                                    
         JDialog dialogo = new JDialog(this, "Insertar Doctor", true);
         dialogo.setLayout(new BorderLayout(10, 10));
 
-        JPanel panelCampos = new JPanel(new GridLayout(4, 4, 12, 10));
-        panelCampos.setBorder(new EmptyBorder(15, 15, 10, 15));
+        JPanel panelCampos = new JPanel(new GridLayout(8, 2, 10, 10));
+        panelCampos.setBorder(new EmptyBorder(15, 20, 10, 20));
 
-        JTextField txtCodigo = new JTextField(14);
-        JTextField txtNombre = new JTextField(14);
-        JTextField txtDireccion = new JTextField(14);
-        JTextField txtTelefono = new JTextField(14);
-        JTextField txtFechaNac = new JTextField(14);
+        JTextField txtCodigo = new JTextField(16);
+        JTextField txtNombre = new JTextField(16);
+        JTextField txtDireccion = new JTextField(16);
+        JTextField txtTelefono = new JTextField(16);
+        JTextField txtFechaNac = new JTextField(16);
         JComboBox<String> cbSexo = new JComboBox<>(new String[]{"MASCULINO", "FEMENINO"});
-        JTextField txtEspecialidad = new JTextField(14);
-        JTextField txtPass = new JTextField(14);
+        JTextField txtEspecialidad = new JTextField(16);
+        JTextField txtPass = new JTextField(16);
 
         panelCampos.add(new JLabel("Código:")); panelCampos.add(txtCodigo);
         panelCampos.add(new JLabel("Nombre:")); panelCampos.add(txtNombre);
@@ -251,7 +258,7 @@ public class UserInterface extends javax.swing.JFrame {
         panelCampos.add(new JLabel("Especialidad:")); panelCampos.add(txtEspecialidad);
         panelCampos.add(new JLabel("Contraseña:")); panelCampos.add(txtPass);
 
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         JButton btnGuardar = new JButton("Insertar");
         JButton btnCancelar = new JButton("Cancelar");
         panelBotones.add(btnGuardar);
@@ -295,22 +302,22 @@ public class UserInterface extends javax.swing.JFrame {
         mostrarPantalla("menu");
     }                                                          
 
-    // Formulario HORIZONTAL para Insertar Paciente
+    // Formulario VERTICAL para Insertar Paciente
     private void opcionAgregarPacienteActionPerformed(java.awt.event.ActionEvent evt) {
         JDialog dialogo = new JDialog(this, "Dar de Alta Paciente", true);
         dialogo.setLayout(new BorderLayout(10, 10));
 
-        JPanel panelCampos = new JPanel(new GridLayout(4, 4, 12, 10));
-        panelCampos.setBorder(new EmptyBorder(15, 15, 10, 15));
+        JPanel panelCampos = new JPanel(new GridLayout(8, 2, 10, 10));
+        panelCampos.setBorder(new EmptyBorder(15, 20, 10, 20));
 
-        JTextField txtCodigo = new JTextField(14);
-        JTextField txtNombre = new JTextField(14);
-        JTextField txtDireccion = new JTextField(14);
-        JTextField txtTelefono = new JTextField(14);
-        JTextField txtFechaNac = new JTextField(14);
+        JTextField txtCodigo = new JTextField(16);
+        JTextField txtNombre = new JTextField(16);
+        JTextField txtDireccion = new JTextField(16);
+        JTextField txtTelefono = new JTextField(16);
+        JTextField txtFechaNac = new JTextField(16);
         JComboBox<String> cbSexo = new JComboBox<>(new String[]{"MASCULINO", "FEMENINO"});
-        JTextField txtEdad = new JTextField(14);
-        JTextField txtEstatura = new JTextField(14);
+        JTextField txtEdad = new JTextField(16);
+        JTextField txtEstatura = new JTextField(16);
 
         panelCampos.add(new JLabel("Código:")); panelCampos.add(txtCodigo);
         panelCampos.add(new JLabel("Nombre:")); panelCampos.add(txtNombre);
@@ -321,7 +328,7 @@ public class UserInterface extends javax.swing.JFrame {
         panelCampos.add(new JLabel("Edad:")); panelCampos.add(txtEdad);
         panelCampos.add(new JLabel("Estatura (ej. 1.77):")); panelCampos.add(txtEstatura);
 
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         JButton btnGuardar = new JButton("Insertar");
         JButton btnCancelar = new JButton("Cancelar");
         panelBotones.add(btnGuardar);

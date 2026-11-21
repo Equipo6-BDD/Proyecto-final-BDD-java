@@ -88,10 +88,11 @@ public class IngresoUsuario extends javax.swing.JPanel {
         javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
         UserInterface ui = (UserInterface) ventana;
 
-        // 1. Si es admin (Avance 2)
+        // 1. Modo Administrador (ve todos los menús y opciones)
         if (usuarioInput.equalsIgnoreCase("admin") && passwordInput.equals("1234")) {
             try (Connection con = ConexionDB.conectar()) {
                 if (con != null) {
+                    ui.configurarPermisos(true);
                     ui.principal.setUsuario("admin");
                     ui.principal.ocultarTabla();
                     ui.mostrarPantalla("menu");
@@ -102,20 +103,20 @@ public class IngresoUsuario extends javax.swing.JPanel {
             return;
         }
 
-        // 2. Si es una Empleada por su Código (ID_Em = 1 o 2) y Contraseña (Avance 3)
-        // Consultamos todas las columnas de Empleado para no fallar por el nombre exacto de la columna
+        // 2. Modo Empleada (Beatriz: 1 / 7021972 | Janet: 2 / 31101987)
         String sql = "SELECT * FROM public.\"Empleado\"";
         try (Connection con = ConexionDB.conectar();
              PreparedStatement pst = con.prepareStatement(sql);
              ResultSet rs = pst.executeQuery()) {
 
             while (rs.next()) {
-                String codigoDB = rs.getString(1).trim(); // Columna 1: ID_Em (1 o 2)
-                String nombreCompleto = rs.getString(2).trim(); // Columna 2: Nombre (Beatriz... / Janet...)
-                String passDB = rs.getString(6).trim(); // Columna 6: Contraseña (7021972 / 31101987)
+                String codigoDB = rs.getString(1).trim();       // Columna 1: ID_Em
+                String nombreCompleto = rs.getString(2).trim(); // Columna 2: Nombre
+                String passDB = rs.getString(6).trim();         // Columna 6: Contraseña
 
                 if (usuarioInput.equals(codigoDB) && passwordInput.equals(passDB)) {
                     String primerNombre = nombreCompleto.split(" ")[0].toUpperCase();
+                    ui.configurarPermisos(false);
                     ui.principal.setUsuario("Hola, " + primerNombre);
                     ui.principal.ocultarTabla();
                     ui.mostrarPantalla("menu");
