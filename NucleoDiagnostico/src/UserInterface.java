@@ -1,4 +1,5 @@
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.sql.Connection;
@@ -7,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
+import java.sql.Time;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,8 +18,11 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 
 public class UserInterface extends javax.swing.JFrame {
     
@@ -52,6 +57,7 @@ public class UserInterface extends javax.swing.JFrame {
         opcionAgregarDoctor.setVisible(esAdmin);
         menuPacientes.setVisible(true);
         opcionAgregarPaciente.setVisible(true);
+        menuCitas.setVisible(true);
     }
     
     public IngresoUsuario getIngreso() {
@@ -75,7 +81,7 @@ public class UserInterface extends javax.swing.JFrame {
             int anio = Integer.parseInt(partes[2]);
             return Date.valueOf(LocalDate.of(anio, mes, dia));
         }
-        throw new IllegalArgumentException("Formato inválido. Usa DD-MM-AAAA o DD-MES-AAAA (ej. 14-AGO-1967)");
+        throw new IllegalArgumentException("Formato inválido. Usa DD-MM-AAAA o DD-MES-AAAA (ej. 23-NOV-2026)");
     }
 
     @SuppressWarnings("unchecked")
@@ -93,6 +99,10 @@ public class UserInterface extends javax.swing.JFrame {
         menuPacientes = new javax.swing.JMenu();
         opcionAgregarPaciente = new javax.swing.JMenuItem();
         consultasGeneralesPacientes = new javax.swing.JMenuItem();
+        menuCitas = new javax.swing.JMenu();
+        opcionAgregarCita = new javax.swing.JMenuItem();
+        opcionModificarCita = new javax.swing.JMenuItem();
+        consultasGeneralesCitas = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Núcleo de Diagnóstico");
@@ -135,6 +145,22 @@ public class UserInterface extends javax.swing.JFrame {
 
         jMenuBar1.add(menuPacientes);
 
+        menuCitas.setText("Citas");
+
+        opcionAgregarCita.setText("Registrar Cita (Dar de alta)");
+        opcionAgregarCita.addActionListener(this::opcionAgregarCitaActionPerformed);
+        menuCitas.add(opcionAgregarCita);
+
+        opcionModificarCita.setText("Modificar / Actualizar Cita");
+        opcionModificarCita.addActionListener(this::opcionModificarCitaActionPerformed);
+        menuCitas.add(opcionModificarCita);
+
+        consultasGeneralesCitas.setText("Consultas Generales");
+        consultasGeneralesCitas.addActionListener(this::consultasGeneralesCitasActionPerformed);
+        menuCitas.add(consultasGeneralesCitas);
+
+        jMenuBar1.add(menuCitas);
+
         setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -152,7 +178,7 @@ public class UserInterface extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     // Formulario VERTICAL para Insertar Empleado
-    private void opcionAgregarEmpleadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_opcionAgregarEmpleadoActionPerformed
+    private void opcionAgregarEmpleadoActionPerformed(java.awt.event.ActionEvent evt) {
         JDialog dialogo = new JDialog(this, "Insertar Empleado", true);
         dialogo.setLayout(new BorderLayout(10, 10));
 
@@ -224,13 +250,13 @@ public class UserInterface extends javax.swing.JFrame {
         dialogo.pack();
         dialogo.setLocationRelativeTo(this);
         dialogo.setVisible(true);
-    }//GEN-LAST:event_opcionAgregarEmpleadoActionPerformed
+    }
 
-    private void consultasGeneralesEmpleadosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consultasGeneralesEmpleadosActionPerformed
+    private void consultasGeneralesEmpleadosActionPerformed(java.awt.event.ActionEvent evt) {
         String sql = "SELECT * FROM public.\"Empleado\" ORDER BY 1 ASC";
         principal.cargarTablaDesdeSQL(sql);
         mostrarPantalla("menu");
-    }//GEN-LAST:event_consultasGeneralesEmpleadosActionPerformed
+    }
 
     // Formulario VERTICAL para Insertar Doctor
     private void opcionAgregarDoctorActionPerformed(java.awt.event.ActionEvent evt) {                                                    
@@ -374,6 +400,300 @@ public class UserInterface extends javax.swing.JFrame {
         mostrarPantalla("menu");
     }
 
+    // ==================== MÓDULO DE CITAS (AVANCE 4) ====================
+
+    private void cargarAgendaDoctor(String nombreDoctor, JTable tablaAgenda) {
+        String[] columnas = {"Horario", "LUNES 23/NOV", "MARTES 24/NOV", "MIÉRCOLES 25/NOV", "JUEVES 26/NOV", "VIERNES 27/NOV"};
+        String[] horarios = {
+            "09:00:00", "10:00:00", "11:00:00", "12:00:00", "13:00:00",
+            "14:00:00", "15:00:00", "16:00:00", "17:00:00", "18:00:00", "19:00:00"
+        };
+        String[] etiquetasHora = {
+            "9:00 A 10:00", "10:00 A 11:00", "11:00 A 12:00", "12:00 A 1:00", "1:00 A 2:00",
+            "2:00 A 3:00", "3:00 A 4:00", "4:00 A 5:00", "5:00 A 6:00", "6:00 A 7:00", "7:00 A 8:00"
+        };
+        String[] fechasSemana = {"2026-11-23", "2026-11-24", "2026-11-25", "2026-11-26", "2026-11-27"};
+
+        DefaultTableModel modelo = new DefaultTableModel(columnas, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        for (int i = 0; i < horarios.length; i++) {
+            Object[] fila = new Object[6];
+            fila[0] = etiquetasHora[i];
+            if (i == 5 || i == 6) {
+                for (int c = 1; c <= 5; c++) fila[c] = "COMIDA";
+            } else {
+                for (int c = 1; c <= 5; c++) fila[c] = "";
+            }
+            modelo.addRow(fila);
+        }
+
+        if (nombreDoctor != null && !nombreDoctor.isEmpty()) {
+            String sql = "SELECT \"Fecha\", \"Hora\", \"Paciente\" FROM public.\"Cita\" WHERE \"Medico\" = ?";
+            try (Connection con = ConexionDB.conectar();
+                 PreparedStatement pst = con.prepareStatement(sql)) {
+                pst.setString(1, nombreDoctor);
+                try (ResultSet rs = pst.executeQuery()) {
+                    while (rs.next()) {
+                        String fechaStr = rs.getDate("Fecha").toString();
+                        String horaStr = rs.getTime("Hora").toString();
+                        String pac = rs.getString("Paciente");
+
+                        int colIndex = -1;
+                        for (int c = 0; c < fechasSemana.length; c++) {
+                            if (fechasSemana[c].equals(fechaStr)) {
+                                colIndex = c + 1;
+                                break;
+                            }
+                        }
+                        int rowIndex = -1;
+                        for (int r = 0; r < horarios.length; r++) {
+                            if (horarios[r].equals(horaStr)) {
+                                rowIndex = r;
+                                break;
+                            }
+                        }
+                        if (colIndex != -1 && rowIndex != -1) {
+                            modelo.setValueAt("OCUPADO: " + pac, rowIndex, colIndex);
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error al cargar agenda:\n" + ex.getMessage());
+            }
+        }
+        tablaAgenda.setModel(modelo);
+    }
+
+    // Registrar Cita + Agenda Semanal del Doctor en vivo
+    private void opcionAgregarCitaActionPerformed(java.awt.event.ActionEvent evt) {
+        JDialog dialogo = new JDialog(this, "Registrar Cita y Consultar Agenda", true);
+        dialogo.setLayout(new BorderLayout(10, 10));
+
+        JComboBox<String> cbDoctor = new JComboBox<>();
+        JComboBox<String> cbPaciente = new JComboBox<>();
+        JTextField txtFecha = new JTextField("23-11-2026", 14);
+        JComboBox<String> cbHora = new JComboBox<>(new String[]{
+            "09:00:00", "10:00:00", "11:00:00", "12:00:00", "13:00:00",
+            "16:00:00", "17:00:00", "18:00:00", "19:00:00"
+        });
+
+        try (Connection con = ConexionDB.conectar();
+             Statement st = con.createStatement()) {
+            try (ResultSet rs = st.executeQuery("SELECT \"Nombre_Doc\" FROM public.\"Doctor\" ORDER BY \"Codigo_Doc\" ASC")) {
+                while (rs.next()) cbDoctor.addItem(rs.getString(1).trim());
+            }
+            try (ResultSet rs = st.executeQuery("SELECT \"Nombre_paciente\" FROM public.\"Paciente\" ORDER BY \"ID_paciente\" ASC")) {
+                while (rs.next()) cbPaciente.addItem(rs.getString(1).trim());
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(dialogo, "Error al cargar doctores/pacientes:\n" + ex.getMessage());
+        }
+
+        JPanel panelForm = new JPanel(new GridLayout(4, 2, 10, 10));
+        panelForm.setBorder(new EmptyBorder(15, 20, 10, 20));
+        panelForm.add(new JLabel("Doctor:")); panelForm.add(cbDoctor);
+        panelForm.add(new JLabel("Paciente:")); panelForm.add(cbPaciente);
+        panelForm.add(new JLabel("Fecha (DD-MM-AAAA):")); panelForm.add(txtFecha);
+        panelForm.add(new JLabel("Hora (HH:MM:SS):")); panelForm.add(cbHora);
+
+        JTable tablaAgenda = new JTable();
+        JScrollPane scrollAgenda = new JScrollPane(tablaAgenda);
+        scrollAgenda.setPreferredSize(new Dimension(820, 230));
+        scrollAgenda.setBorder(javax.swing.BorderFactory.createTitledBorder("Agenda Semanal del Doctor Seleccionado"));
+
+        if (cbDoctor.getItemCount() > 0) {
+            cargarAgendaDoctor((String) cbDoctor.getSelectedItem(), tablaAgenda);
+        }
+
+        cbDoctor.addActionListener(e -> cargarAgendaDoctor((String) cbDoctor.getSelectedItem(), tablaAgenda));
+
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        JButton btnGuardar = new JButton("Registrar Cita");
+        JButton btnCancelar = new JButton("Cerrar");
+        panelBotones.add(btnGuardar);
+        panelBotones.add(btnCancelar);
+
+        btnGuardar.addActionListener(e -> {
+            String medico = (String) cbDoctor.getSelectedItem();
+            String paciente = (String) cbPaciente.getSelectedItem();
+            String horaStr = (String) cbHora.getSelectedItem();
+
+            try (Connection con = ConexionDB.conectar()) {
+                Date fechaSQL = convertirFecha(txtFecha.getText());
+                Time horaSQL = Time.valueOf(horaStr);
+
+                // 1. Verificar si el doctor ya tiene cita en esa fecha y hora
+                String sqlCheckDoc = "SELECT \"Paciente\" FROM public.\"Cita\" WHERE \"Medico\" = ? AND \"Fecha\" = ? AND \"Hora\" = ?";
+                try (PreparedStatement pst = con.prepareStatement(sqlCheckDoc)) {
+                    pst.setString(1, medico);
+                    pst.setDate(2, fechaSQL);
+                    pst.setTime(3, horaSQL);
+                    try (ResultSet rs = pst.executeQuery()) {
+                        if (rs.next()) {
+                            JOptionPane.showMessageDialog(dialogo,
+                                "NO se puede registrar la cita.\nEl doctor " + medico + " ya tiene cita en ese horario con: " + rs.getString(1),
+                                "Horario Ocupado", JOptionPane.WARNING_MESSAGE);
+                            return;
+                        }
+                    }
+                }
+
+                // 2. Verificar si el paciente ya tiene cita en esa fecha y hora con otro doctor
+                String sqlCheckPac = "SELECT \"Medico\" FROM public.\"Cita\" WHERE \"Paciente\" = ? AND \"Fecha\" = ? AND \"Hora\" = ?";
+                try (PreparedStatement pst = con.prepareStatement(sqlCheckPac)) {
+                    pst.setString(1, paciente);
+                    pst.setDate(2, fechaSQL);
+                    pst.setTime(3, horaSQL);
+                    try (ResultSet rs = pst.executeQuery()) {
+                        if (rs.next()) {
+                            JOptionPane.showMessageDialog(dialogo,
+                                "NO se puede registrar la cita.\nEl paciente " + paciente + " ya tiene cita a esa misma hora con: " + rs.getString(1),
+                                "Paciente Ocupado", JOptionPane.WARNING_MESSAGE);
+                            return;
+                        }
+                    }
+                }
+
+                // 3. Insertar cita en PostgreSQL
+                String sqlInsert = "INSERT INTO public.\"Cita\" (\"Medico\", \"Paciente\", \"Hora\", \"Fecha\") VALUES (?, ?, ?, ?)";
+                try (PreparedStatement pst = con.prepareStatement(sqlInsert)) {
+                    pst.setString(1, medico);
+                    pst.setString(2, paciente);
+                    pst.setTime(3, horaSQL);
+                    pst.setDate(4, fechaSQL);
+                    pst.executeUpdate();
+                }
+
+                JOptionPane.showMessageDialog(dialogo, "¡Cita registrada correctamente en PostgreSQL!");
+                cargarAgendaDoctor(medico, tablaAgenda);
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dialogo, "Error al registrar cita:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        btnCancelar.addActionListener(e -> dialogo.dispose());
+
+        dialogo.add(panelForm, BorderLayout.NORTH);
+        dialogo.add(scrollAgenda, BorderLayout.CENTER);
+        dialogo.add(panelBotones, BorderLayout.SOUTH);
+        dialogo.pack();
+        dialogo.setLocationRelativeTo(this);
+        dialogo.setVisible(true);
+    }
+
+    // Modificar / Actualizar Cita (Paso 7)
+    private void opcionModificarCitaActionPerformed(java.awt.event.ActionEvent evt) {
+        JDialog dialogo = new JDialog(this, "Modificar / Actualizar Cita", true);
+        dialogo.setLayout(new BorderLayout(10, 10));
+
+        JComboBox<String> cbCitas = new JComboBox<>();
+        Map<String, Integer> mapaIds = new HashMap<>();
+        Map<String, String> mapaMedicos = new HashMap<>();
+        Map<String, String> mapaPacientes = new HashMap<>();
+
+        try (Connection con = ConexionDB.conectar();
+             Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery("SELECT \"ID_Cita\", \"Fecha\", \"Hora\", \"Medico\", \"Paciente\" FROM public.\"Cita\" ORDER BY \"ID_Cita\" ASC")) {
+            while (rs.next()) {
+                int id = rs.getInt("ID_Cita");
+                String med = rs.getString("Medico").trim();
+                String pac = rs.getString("Paciente").trim();
+                String etiqueta = "ID " + id + " | " + pac + " con " + med + " (" + rs.getDate("Fecha") + " " + rs.getTime("Hora") + ")";
+                cbCitas.addItem(etiqueta);
+                mapaIds.put(etiqueta, id);
+                mapaMedicos.put(etiqueta, med);
+                mapaPacientes.put(etiqueta, pac);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(dialogo, "Error al cargar citas:\n" + ex.getMessage());
+        }
+
+        if (cbCitas.getItemCount() == 0) {
+            JOptionPane.showMessageDialog(this, "No hay citas registradas para modificar.");
+            return;
+        }
+
+        JTextField txtNuevaFecha = new JTextField("23-11-2026", 14);
+        JComboBox<String> cbNuevaHora = new JComboBox<>(new String[]{
+            "09:00:00", "10:00:00", "11:00:00", "12:00:00", "13:00:00",
+            "16:00:00", "17:00:00", "18:00:00", "19:00:00"
+        });
+
+        JPanel panelCampos = new JPanel(new GridLayout(3, 2, 10, 10));
+        panelCampos.setBorder(new EmptyBorder(15, 20, 10, 20));
+        panelCampos.add(new JLabel("Seleccionar Cita:")); panelCampos.add(cbCitas);
+        panelCampos.add(new JLabel("Nueva Fecha (DD-MM-AAAA):")); panelCampos.add(txtNuevaFecha);
+        panelCampos.add(new JLabel("Nueva Hora (HH:MM:SS):")); panelCampos.add(cbNuevaHora);
+
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        JButton btnActualizar = new JButton("Actualizar Cita");
+        JButton btnCancelar = new JButton("Cancelar");
+        panelBotones.add(btnActualizar);
+        panelBotones.add(btnCancelar);
+
+        btnActualizar.addActionListener(e -> {
+            String seleccion = (String) cbCitas.getSelectedItem();
+            int idCita = mapaIds.get(seleccion);
+            String medico = mapaMedicos.get(seleccion);
+            String paciente = mapaPacientes.get(seleccion);
+            String horaStr = (String) cbNuevaHora.getSelectedItem();
+
+            try (Connection con = ConexionDB.conectar()) {
+                Date fechaSQL = convertirFecha(txtNuevaFecha.getText());
+                Time horaSQL = Time.valueOf(horaStr);
+
+                // Verificar disponibilidad antes de actualizar
+                String sqlCheck = "SELECT \"ID_Cita\" FROM public.\"Cita\" WHERE (\"Medico\" = ? OR \"Paciente\" = ?) AND \"Fecha\" = ? AND \"Hora\" = ? AND \"ID_Cita\" <> ?";
+                try (PreparedStatement pst = con.prepareStatement(sqlCheck)) {
+                    pst.setString(1, medico);
+                    pst.setString(2, paciente);
+                    pst.setDate(3, fechaSQL);
+                    pst.setTime(4, horaSQL);
+                    pst.setInt(5, idCita);
+                    try (ResultSet rs = pst.executeQuery()) {
+                        if (rs.next()) {
+                            JOptionPane.showMessageDialog(dialogo, "NO se puede cambiar: ese horario ya está ocupado.", "Conflicto de Horario", JOptionPane.WARNING_MESSAGE);
+                            return;
+                        }
+                    }
+                }
+
+                String sqlUpdate = "UPDATE public.\"Cita\" SET \"Fecha\" = ?, \"Hora\" = ? WHERE \"ID_Cita\" = ?";
+                try (PreparedStatement pst = con.prepareStatement(sqlUpdate)) {
+                    pst.setDate(1, fechaSQL);
+                    pst.setTime(2, horaSQL);
+                    pst.setInt(3, idCita);
+                    pst.executeUpdate();
+                }
+
+                JOptionPane.showMessageDialog(dialogo, "¡Cita actualizada correctamente en PostgreSQL!");
+                dialogo.dispose();
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dialogo, "Error al actualizar cita:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        btnCancelar.addActionListener(e -> dialogo.dispose());
+        dialogo.add(panelCampos, BorderLayout.CENTER);
+        dialogo.add(panelBotones, BorderLayout.SOUTH);
+        dialogo.pack();
+        dialogo.setLocationRelativeTo(this);
+        dialogo.setVisible(true);
+    }
+
+    private void consultasGeneralesCitasActionPerformed(java.awt.event.ActionEvent evt) {
+        String sql = "SELECT \"ID_Cita\", \"Fecha\", \"Hora\", \"Medico\", \"Paciente\" FROM public.\"Cita\" ORDER BY \"ID_Cita\" ASC";
+        principal.cargarTablaDesdeSQL(sql);
+        mostrarPantalla("menu");
+    }
+
     public static void main(String args[]) {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -390,16 +710,20 @@ public class UserInterface extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem consultasGeneralesCitas;
     private javax.swing.JMenuItem consultasGeneralesDoctores;
     private javax.swing.JMenuItem consultasGeneralesEmpleados;
     private javax.swing.JMenuItem consultasGeneralesPacientes;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenu menuCitas;
     private javax.swing.JMenu menuDoctores;
     private javax.swing.JMenu menuEmpleados;
     private javax.swing.JMenu menuPacientes;
+    private javax.swing.JMenuItem opcionAgregarCita;
     private javax.swing.JMenuItem opcionAgregarDoctor;
     private javax.swing.JMenuItem opcionAgregarEmpleado;
     private javax.swing.JMenuItem opcionAgregarPaciente;
+    private javax.swing.JMenuItem opcionModificarCita;
     private javax.swing.JPanel panelPrincipal;
     // End of variables declaration//GEN-END:variables
 }
