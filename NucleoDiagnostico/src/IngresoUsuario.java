@@ -12,23 +12,24 @@ public class IngresoUsuario extends javax.swing.JPanel {
 
     public void limpiarCampos() {
         nombreUsuario.setText("");
-        contraseñaUsuario.setText("");
+        campoContrasena.setText("");
+    }
+
+    public String getUsuario() {
+        return nombreUsuario.getText();
     }
 
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-
-        labelUsuario = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
         nombreUsuario = new javax.swing.JTextField();
-        labelContraseña = new javax.swing.JLabel();
-        contraseñaUsuario = new javax.swing.JPasswordField();
+        campoContrasena = new javax.swing.JPasswordField();
         btnAceptar = new javax.swing.JButton();
         btnCancelar = new javax.swing.JButton();
 
-        labelUsuario.setText("Usuario");
-
-        labelContraseña.setText("Contraseña");
+        jLabel1.setText("Usuario");
+        jLabel2.setText("Contraseña");
 
         btnAceptar.setText("Aceptar");
         btnAceptar.addActionListener(this::btnAceptarActionPerformed);
@@ -41,78 +42,82 @@ public class IngresoUsuario extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(134, 134, 134)
+                .addGap(80, 80, 80)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel2)
+                    .addComponent(btnAceptar))
+                .addGap(30, 30, 30)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnAceptar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnCancelar))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(labelUsuario)
-                            .addComponent(labelContraseña))
-                        .addGap(36, 36, 36)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(contraseñaUsuario)
-                            .addComponent(nombreUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(171, Short.MAX_VALUE))
+                    .addComponent(nombreUsuario, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
+                    .addComponent(campoContrasena)
+                    .addComponent(btnCancelar, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addContainerGap(80, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(106, 106, 106)
+                .addGap(60, 60, 60)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(labelUsuario)
+                    .addComponent(jLabel1)
                     .addComponent(nombreUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(25, 25, 25)
+                .addGap(20, 20, 20)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(labelContraseña)
-                    .addComponent(contraseñaUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(58, 58, 58)
+                    .addComponent(jLabel2)
+                    .addComponent(campoContrasena, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(35, 35, 35)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnAceptar)
                     .addComponent(btnCancelar))
-                .addContainerGap(122, Short.MAX_VALUE))
+                .addContainerGap(60, Short.MAX_VALUE))
         );
-    }// </editor-fold>//GEN-END:initComponents
+    }
 
-    private void btnAceptarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAceptarActionPerformed
+    private void btnAceptarActionPerformed(java.awt.event.ActionEvent evt) {
         String usuarioInput = nombreUsuario.getText().trim();
-        String passwordInput = new String(contraseñaUsuario.getPassword()).trim();
-
-        if (usuarioInput.isEmpty() || passwordInput.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Por favor ingresa usuario y contraseña.");
-            return;
-        }
+        String passwordInput = new String(campoContrasena.getPassword()).trim();
 
         javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
         UserInterface ui = (UserInterface) ventana;
 
-        // 1. Modo Administrador (ve todos los menús y opciones)
+        // 1. Modo Administrador (admin / 1234 o tabla Usuario)
         if (usuarioInput.equalsIgnoreCase("admin") && passwordInput.equals("1234")) {
-            try (Connection con = ConexionDB.conectar()) {
-                if (con != null) {
-                    ui.configurarPermisos(true);
-                    ui.principal.setUsuario("admin");
-                    ui.principal.ocultarTabla();
-                    ui.mostrarPantalla("menu");
-                }
-            } catch (SQLException e) {
-                JOptionPane.showMessageDialog(this, "Error SQL: " + e.getMessage());
-            }
+            ui.configurarPermisos(true);
+            ui.principal.setUsuario("Hola, ADMIN");
+            ui.principal.ocultarTabla();
+            ui.mostrarPantalla("menu");
             return;
         }
 
-        // 2. Modo Empleada (Beatriz: 1 / 7021972 | Janet: 2 / 31101987)
-        String sql = "SELECT * FROM public.\"Empleado\"";
+        String sqlAdmin = "SELECT * FROM public.\"Usuario\"";
         try (Connection con = ConexionDB.conectar();
-             PreparedStatement pst = con.prepareStatement(sql);
+             PreparedStatement pst = con.prepareStatement(sqlAdmin);
+             ResultSet rs = pst.executeQuery()) {
+            while (rs.next()) {
+                String userDB = rs.getString(1).trim();
+                String passDB = rs.getString(2).trim();
+                if (usuarioInput.equals(userDB) && passwordInput.equals(passDB)) {
+                    ui.configurarPermisos(true);
+                    ui.principal.setUsuario("Hola, " + userDB.toUpperCase());
+                    ui.principal.ocultarTabla();
+                    ui.mostrarPantalla("menu");
+                    return;
+                }
+            }
+        } catch (SQLException e) {
+            // Si la tabla Usuario tiene otra estructura, continúa con Empleados y Doctores
+        }
+
+        // 2. Modo Empleada (Beatriz: 1 / 7021972 | Janet: 2 / 31101987)
+        String sqlEmp = "SELECT * FROM public.\"Empleado\"";
+        try (Connection con = ConexionDB.conectar();
+             PreparedStatement pst = con.prepareStatement(sqlEmp);
              ResultSet rs = pst.executeQuery()) {
 
             while (rs.next()) {
-                String codigoDB = rs.getString(1).trim();       // Columna 1: ID_Em
-                String nombreCompleto = rs.getString(2).trim(); // Columna 2: Nombre
-                String passDB = rs.getString(6).trim();         // Columna 6: Contraseña
+                String codigoDB = rs.getString(1).trim();
+                String nombreCompleto = rs.getString(2).trim();
+                String passDB = rs.getString(6).trim();
 
                 if (usuarioInput.equals(codigoDB) && passwordInput.equals(passDB)) {
                     String primerNombre = nombreCompleto.split(" ")[0].toUpperCase();
@@ -123,24 +128,40 @@ public class IngresoUsuario extends javax.swing.JPanel {
                     return;
                 }
             }
-
-            JOptionPane.showMessageDialog(this, "Código de empleado o contraseña incorrectos.", "Acceso denegado", JOptionPane.ERROR_MESSAGE);
-
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Error al autenticar empleado:\n" + e.getMessage());
         }
-    }//GEN-LAST:event_btnAceptarActionPerformed
 
-    public String getUsuario() {
-        return nombreUsuario.getText();
+        // 3. Modo Doctor (ej. Dr. Josué: 3 / 2031984)
+        String sqlDoc = "SELECT \"Codigo_Doc\", \"Nombre_Doc\", \"Contraseña_Doc\" FROM public.\"Doctor\"";
+        try (Connection con = ConexionDB.conectar();
+             PreparedStatement pst = con.prepareStatement(sqlDoc);
+             ResultSet rs = pst.executeQuery()) {
+
+            while (rs.next()) {
+                String codigoDoc = rs.getString(1).trim();
+                String nombreDoc = rs.getString(2).trim();
+                String passDoc = rs.getString(3).trim();
+
+                if (usuarioInput.equals(codigoDoc) && passwordInput.equals(passDoc)) {
+                    ui.configurarPermisosDoctor(nombreDoc);
+                    ui.principal.setUsuario("Hola, DR. " + nombreDoc.split(" ")[0].toUpperCase());
+                    ui.principal.ocultarTabla();
+                    ui.mostrarPantalla("menu");
+                    return;
+                }
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al autenticar doctor:\n" + e.getMessage());
+        }
+
+        JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos.", "Acceso Denegado", JOptionPane.ERROR_MESSAGE);
     }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAceptar;
     private javax.swing.JButton btnCancelar;
-    private javax.swing.JPasswordField contraseñaUsuario;
-    private javax.swing.JLabel labelContraseña;
-    private javax.swing.JLabel labelUsuario;
+    private javax.swing.JPasswordField campoContrasena;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JTextField nombreUsuario;
-    // End of variables declaration//GEN-END:variables
 }
